@@ -61,7 +61,7 @@ class EllipsoidPredictor:
             use_lr_scheduler=False,
             verbose=0,
             stop_on_best=False,
-            loss_strategy="log_volume",
+            loss_strategy="exact_volume",
             use_epsilon=False
         ):
         """"
@@ -305,7 +305,7 @@ class EllipsoidPredictor:
                 # Case where we use a DataLoader
                 empty = True
                 for x, _ in testloader:
-                    Lambdas = self.get_Lambdas(x)
+                    Lambdas = self.get_Lambdas_whithout_inf(x)
                     if empty:
                         Lambdas_test = Lambdas
                         empty = False
@@ -314,7 +314,7 @@ class EllipsoidPredictor:
                     
             elif x_test is not None:
                 # Case where we directly give tensors
-                Lambdas_test = self.get_Lambdas(x_test)
+                Lambdas_test = self.get_Lambdas_whithout_inf(x_test)
 
             else:
                 raise ValueError("You need to either provide a `testloader`, or `x_test`.")
@@ -344,7 +344,7 @@ class EllipsoidPredictor:
             if testloader is not None:
                 # Case where we use a DataLoader
                 empty = True
-                for x, _ in testloader:
+                for x, _  in testloader:
                     Lambdas = self.get_Lambdas_whithout_inf(x)
                     if empty:
                         Lambdas_test = Lambdas
@@ -389,7 +389,7 @@ class EllipsoidPredictor:
                 empty = True
                 for x, y in testloader:
                     f_x = self.model(x)
-                    Lambdas = self.get_Lambdas(x)
+                    Lambdas = self.get_Lambdas_whithout_inf(x)
 
                     if empty:
                         f_x_test = f_x
@@ -404,7 +404,7 @@ class EllipsoidPredictor:
             elif x_test is not None and y_test is not None:
                 # Case where x_test and y_test are given as tensors
                 f_x_test = self.model(x_test)
-                Lambdas_test = self.get_Lambdas(x_test)
+                Lambdas_test = self.get_Lambdas_whithout_inf(x_test)
 
             else:
                 raise ValueError("You must provide either `testloader` or both `x_test` and `y_test`.")
@@ -440,3 +440,11 @@ class EllipsoidPredictor:
             norm_values = torch.tensor([calculate_norm_q(Lambdas[i] @ (y[i] - f_x[i]), self.q) for i in range(len(y))])  # (n,)
         
             return norm_values <= self.nu_conformal
+       
+    def get_Lambdas_whithout_inf(self, x):
+        Lambdas = self.get_Lambdas(x)
+        dets = torch.det(Lambdas)
+        det_zero_mask = (dets == 0)
+        max_values = Lambdas.max(dim=-1, keepdim=True).values
+        Lambdas[det_zero_mask] = max_values[det_zero_mask]
+        return Lambdas

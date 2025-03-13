@@ -1,0 +1,42 @@
+{
+    "n_experiments": 10,
+    
+    "load_name": "energy",
+    "normalize": true,
+    "dtype": "float32",
+    
+    "hidden_dim": 256,
+    "n_hidden_layers": 3,
+    "hidden_dim_matrix": 256,
+    "n_hidden_layers_matrix": 3,
+
+    "batch_size_warm_start": 50,
+    "num_epochs_warm_start": 1000,
+    
+    "n_neighbors": 1000,
+    
+    "batch_size_our_loss": 100,
+    "warm_start_epochs_mat": 2000,
+    "num_epochs_our_loss": 5000,
+    
+    "lr_warm_start": 0.0001,
+    "lr_model": 0.008,
+    "lr_matrix": 0.008,
+    "lr_q": 0.01,
+    "use_lr_scheduler": true,
+    "loss_strategy" : "log_volume",
+    "use_epsilon": false,
+    
+    "batch_size_rectangles": 100,
+    "num_epochs_rectangles": 200,
+    "lr_rectangles": 0.0001,
+    
+    "keep_best": true,
+
+    "prop_train": 0.55,
+    "prop_stop": 0.15,
+    "prop_calibration": 0.15,
+    "prop_test": 0.15,
+
+    "alpha": 0.01
+}
