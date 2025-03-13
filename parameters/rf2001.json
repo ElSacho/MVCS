@@ -1,0 +1,41 @@
+{
+    "n_experiments": 10,
+    
+    "load_name": "rf2",
+    "normalize": true,
+    
+    "hidden_dim": 256,
+    "n_hidden_layers": 3,
+    "hidden_dim_matrix": 256,
+    "n_hidden_layers_matrix": 3,
+
+    "batch_size_warm_start": 100,
+    "num_epochs_warm_start": 600,
+    
+    "n_neighbors": 1000,
+    
+    "batch_size_our_loss": 1000,
+    "warm_start_epochs_mat": 10000,
+    "num_epochs_our_loss": 10000,
+    
+    "lr_warm_start": 0.001,
+    "lr_model": 0.0001,
+    "lr_matrix": 0.0001,
+    "lr_q": 0.01,
+    "use_lr_scheduler": true,
+    "loss_strategy" : "log_volume",
+    "use_epsilon": false,
+    
+    "batch_size_rectangles": 100,
+    "num_epochs_rectangles": 300,
+    "lr_rectangles": 0.0001,
+    
+    "keep_best": true,
+
+    "prop_train": 0.7,
+    "prop_stop": 0.1,
+    "prop_calibration": 0.1,
+    "prop_test": 0.1,
+
+    "alpha": 0.01
+}
