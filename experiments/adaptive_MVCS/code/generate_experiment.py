@@ -26,7 +26,8 @@ from hyper_rectangles import *
 from covariances import *
 from local_covariances import *
 
-seed_everything(43)
+
+seed_everything(43) # The seed is not the same as the one used to fit the hyperparameters - which is 42
 
 
 parser = argparse.ArgumentParser(description="Script avec argument config_name")

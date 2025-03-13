@@ -1,9 +1,0 @@
-Exp. Fixed  & $0.989 \pm 0.00$  & $0.988 \pm 0.00$  & $0.988 \pm 0.00$  & $0.988 \pm 0.00$ \\ \hline
-Exp. Transformed & $0.991 \pm 0.00$  & $0.990 \pm 0.00$  & $0.988 \pm 0.00$  & $0.988 \pm 0.00$ \\ \hline
-Gau. Fixed  & $0.990 \pm 0.00$  & $0.988 \pm 0.00$  & $0.990 \pm 0.00$  & $0.989 \pm 0.00$ \\ \hline
-Gau. Transformed  & $0.990 \pm 0.00$  & $0.989 \pm 0.00$  & $0.989 \pm 0.00$  & $0.989 \pm 0.00$ \\ \hline
-
-Exp. Fixed 
-Exp. Transformed
-Gau. Fixed 
-Gau. Transformed 
