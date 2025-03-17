@@ -9,8 +9,8 @@ import torch.optim as optim
 
 from torch_functions import *
 
-class EllipsoidPredictor:
-    def __init__(self, model, matrix_model, q=torch.tensor(2.0, requires_grad=True)):
+class MVCSPredictor:
+    def __init__(self, center_model, matrix_model, q=torch.tensor(2.0, requires_grad=True)):
         """
         Parameters
         ----------
@@ -22,7 +22,7 @@ class EllipsoidPredictor:
             The q parameter of the q-norm. The default is torch.tensor(2.0, requires_grad=True).
         """
 
-        self.model = model
+        self.center_model = center_model
         self.matrix_model = matrix_model
         self.q = q
         self._nu_conformal = None
@@ -104,7 +104,7 @@ class EllipsoidPredictor:
         self.alpha = alpha
 
         optimizer = torch.optim.Adam([
-            {'params': self.model.parameters(), 'lr': lr_model},  # Learning rate for self.model
+            {'params': self.center_model.parameters(), 'lr': lr_model},  # Learning rate for self.center_model
             {'params': self.matrix_model.parameters(), 'lr': lr_matrix_model},  # Learning rate for self.matrix_model
             {'params': self.q, 'lr': lr_q}  # Learning rate for q
         ])
@@ -120,7 +120,7 @@ class EllipsoidPredictor:
         elif verbose == 2:
             print_every = 1
 
-        last_model_weight = self.model.state_dict()
+        last_model_weight = self.center_model.state_dict()
         last_lambdas_weight = self.matrix_model.state_dict()
         last_q = self.q.item()
 
@@ -134,15 +134,15 @@ class EllipsoidPredictor:
     
                 if epoch < num_epochs_mat_only:
                     with torch.no_grad():
-                        f_x = self.model(x)
+                        f_x = self.center_model(x)
                 else:
-                    f_x = self.model(x)
+                    f_x = self.center_model(x)
 
 
                 loss = compute_loss(y, f_x, Lambdas, self.q, alpha, loss_strategy=loss_strategy, use_epsilon=use_epsilon)
 
                 if torch.isnan(loss):
-                    self.model.load_state_dict(last_model_weight)
+                    self.center_model.load_state_dict(last_model_weight)
                     self.matrix_model.load_state_dict(last_lambdas_weight)
                     self.q = torch.tensor(last_q, requires_grad=True)
                     break
@@ -151,7 +151,7 @@ class EllipsoidPredictor:
                 optimizer.step()
                 epoch_loss += loss
 
-                last_model_weight = copy.deepcopy(self.model.state_dict())
+                last_model_weight = copy.deepcopy(self.center_model.state_dict())
                 last_lambdas_weight = copy.deepcopy(self.matrix_model.state_dict())
                 last_q = self.q.item()
 
@@ -165,7 +165,7 @@ class EllipsoidPredictor:
                 if verbose == 2:
                     print(f"New best stop loss: {epoch_stop_loss.item()}")
                 self.best_stop_loss = epoch_stop_loss
-                self.best_model_weight = copy.deepcopy(self.model.state_dict())
+                self.best_model_weight = copy.deepcopy(self.center_model.state_dict())
                 self.best_lambdas_weight = copy.deepcopy(self.matrix_model.state_dict())
                 self.best_q = self.q.item()
                 self.load_best_model()
@@ -192,7 +192,7 @@ class EllipsoidPredictor:
         Load the best model.    
         """
         if self.best_model_weight is not None:
-            self.model.load_state_dict(self.best_model_weight)
+            self.center_model.load_state_dict(self.best_model_weight)
             self.matrix_model.load_state_dict(self.best_lambdas_weight)
             self.q = torch.tensor(self.best_q, requires_grad=True)
         else:
@@ -216,7 +216,7 @@ class EllipsoidPredictor:
             empty = True
             for x, y in dataloader:
                 Lambdas = self.get_Lambdas(x)
-                f_x = self.model( x )
+                f_x = self.center_model( x )
 
                 if empty:
                     f_x_eval = f_x
@@ -253,8 +253,8 @@ class EllipsoidPredictor:
                 empty = True
 
                 for x, y in calibrationloader:
-                    f_x = self.model(x)
-                    Lambdas = self.get_Lambdas_whithout_inf(x)
+                    f_x = self.center_model(x)
+                    Lambdas = self.get_Lambdas(x)
 
                     if empty:
                         f_x_calibration = f_x
@@ -268,8 +268,8 @@ class EllipsoidPredictor:
             
             elif x_calibration is not None and y_calibration is not None:
                 # Case where we directly give tensors
-                f_x_calibration = self.model(x_calibration)
-                Lambdas_calibration = self.get_Lambdas_whithout_inf(x_calibration)
+                f_x_calibration = self.center_model(x_calibration)
+                Lambdas_calibration = self.get_Lambdas(x_calibration)
             
             else:
                 raise ValueError("You need to provide a `calibrationloader`, or `x_calibration` and `y_calibration`.")
@@ -345,7 +345,7 @@ class EllipsoidPredictor:
                 # Case where we use a DataLoader
                 empty = True
                 for x, _ in testloader:
-                    Lambdas = self.get_Lambdas_whithout_inf(x)
+                    Lambdas = self.get_Lambdas(x)
                     if empty:
                         Lambdas_test = Lambdas
                         empty = False
@@ -354,7 +354,7 @@ class EllipsoidPredictor:
                     
             elif x_test is not None:
                 # Case where we directly give tensors
-                Lambdas_test = self.get_Lambdas_whithout_inf(x_test)
+                Lambdas_test = self.get_Lambdas(x_test)
 
             else:
                 raise ValueError("You need to either provide a `testloader`, or `x_test`.")
@@ -388,7 +388,7 @@ class EllipsoidPredictor:
                 # Case where we use a DataLoader
                 empty = True
                 for x, y in testloader:
-                    f_x = self.model(x)
+                    f_x = self.center_model(x)
                     Lambdas = self.get_Lambdas(x)
 
                     if empty:
@@ -403,7 +403,7 @@ class EllipsoidPredictor:
 
             elif x_test is not None and y_test is not None:
                 # Case where x_test and y_test are given as tensors
-                f_x_test = self.model(x_test)
+                f_x_test = self.center_model(x_test)
                 Lambdas_test = self.get_Lambdas(x_test)
 
             else:
@@ -434,7 +434,7 @@ class EllipsoidPredictor:
             if self._nu_conformal is None:
                 raise ValueError("You must call the `conformalize_ellipsoids` method before.")
 
-            f_x = self.model(x)
+            f_x = self.center_model(x)
             Lambdas = self.get_Lambdas(x)
             
             norm_values = torch.tensor([calculate_norm_q(Lambdas[i] @ (y[i] - f_x[i]), self.q) for i in range(len(y))])  # (n,)
