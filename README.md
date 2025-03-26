@@ -61,6 +61,7 @@ Navigate to `experiments/adaptive_MVCS/code/` and run:
 python generate_experiment.py name_of_the_parameter_file
 ```
 where `name_of_the_parameter_file.json` is in `experiments/adaptive_MVCS/parameters/` and contains the strategy's hyperparameters.
+Run the file `see_results_normalized.ipynb` to generate the tables present in the manuscript.
 
 ### Plotting Results
 Plots can be generated using Jupyter notebooks in `experiments/adaptive_MVCS/code/`.
